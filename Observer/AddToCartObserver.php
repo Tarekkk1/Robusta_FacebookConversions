@@ -37,10 +37,13 @@ class AddToCartObserver implements ObserverInterface
         $this->sendAddToCartEventToFacebook($product, $qty, $customerEmail);
     }
 
-    protected function sendAddToCartEventToFacebook($product, $qty, $customerEmail)
+    public function sendAddToCartEventToFacebook($product, $qty, $customerEmail)
     {
-        $pixelId = '288569267117797'; 
-        $accessToken = 'EAAKUKi3gGu4BOzR3JZCTeAeDI72lgX8uncnGoWvxaDzBHkhMQmfrSZBop7F2OVSX3MbZAcGB7ICvYx6jIbNlwk68FYuCcIG2j89eZC2EQ0ZCo6yHbuPXDm9Vk7wDhBVDReBP7gVZAGeZBe9UgyAYNqn6fnZBpnvSUZAnFZAqjaykzkjgiI1QHZCFoT4NlWJg662QqOa2wZDZD';
+        
+        $this->logger->info('AddToCart event in progress...');
+        
+        $pixelId = 'YOUR_PIXEL_ID'; 
+        $accessToken = 'YOUR_ACCESS_TOKEN';
 
         $data = [
             'data' => [

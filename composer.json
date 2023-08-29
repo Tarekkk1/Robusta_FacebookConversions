@@ -13,7 +13,7 @@
     ],
     "authors": [
         {
-            "name": "Robusta TechSolutions",
+            "name": "Robusta Studio",
             "email": "tarek.zeyad@robustastudio.com"
         }
     ],
@@ -22,7 +22,15 @@
             "registration.php"
         ],
         "psr-4": {
-            "Robusta\\FacebookConversions\\": ""
+            "Robusta\\FacebookConversions\\": "src/"
         }
+    },
+    "extra": {
+        "map": [
+            [
+                "*",
+                "Robusta/FacebookConversions"
+            ]
+        ]
     }
 }
