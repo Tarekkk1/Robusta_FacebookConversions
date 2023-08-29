@@ -1,0 +1,28 @@
+{
+    "name": "robusta/facebook-conversions",
+    "description": "Magento 2 extension for integrating Facebook's Standard Events using the Conversions API",
+    "require": {
+        "php": "~7.3.0||~7.4.0||~8.0.0",
+        "magento/framework": "103.0.*"
+    },
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "authors": [
+        {
+            "name": "Robusta TechSolutions",
+            "email": "tarek.zeyad@robustastudio.com"
+        }
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Robusta\\FacebookConversions\\": ""
+        }
+    }
+}
