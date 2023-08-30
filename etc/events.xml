@@ -1,22 +1,12 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
 
-</config>
-<!-- 
-<event name="checkout_cart_add_product_complete">
-        <observer name="robusta_facebookconversions_add_to_cart" instance="Robusta\FacebookConversions\Observer\AddToCartObserver" />
-    </event> -->
-<!-- <event name="wishlist_add_product">
+    <event name="controller_action_postdispatch_wishlist_index_add">
         <observer name="robusta_facebookconversions_add_to_wishlist" instance="Robusta\FacebookConversions\Observer\AddToWishlistObserver" />
     </event>
-    <event name="customer_register_success">
-        <observer name="robusta_facebookconversions_complete_registration" instance="Robusta\FacebookConversions\Observer\CompleteRegistrationObserver" />
-    </event> -->
-<!-- <event name="sales_order_place_after">
-        <observer name="robusta_facebookconversions_purchase" instance="Robusta\FacebookConversions\Observer\PurchaseObserver" />
-    </event> -->
-<!-- 
-    <event name="catalog_search_query_process"> 
-        <observer name="robusta_facebookconversions_search" instance="Robusta\FacebookConversions\Observer\SearchObserver" />
-    </event> 
-    -->
+
+    <event name="controller_action_postdispatch_checkout_cart_add">
+        <observer name="robusta_facebookconversions_add_to_cart" instance="Robusta\FacebookConversions\Observer\AddToCartObserver" />
+    </event>
+
+</config>
