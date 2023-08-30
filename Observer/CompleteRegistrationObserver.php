@@ -6,19 +6,23 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Customer\Model\Customer;
 use Psr\Log\LoggerInterface;
+use Robusta\FacebookConversions\Services\CAPI as FBHelper;
 
 class CompleteRegistrationObserver implements ObserverInterface
 {
     protected $logger;
     protected $curl;
+    protected $FBHelper;
     public function __construct(
         LoggerInterface $logger
         ,
-        \Magento\Framework\HTTP\Client\Curl $curl
+        \Magento\Framework\HTTP\Client\Curl $curl,
+        FBHelper $FBHelper
             
     ) {
         $this->logger = $logger;
         $this->curl = $curl;
+        $this->FBHelper = $FBHelper;
     }
 
     public function execute(Observer $observer)
@@ -36,9 +40,7 @@ class CompleteRegistrationObserver implements ObserverInterface
 {
     $this->logger->info('Complete registration event in progress...');
 
-    $pixelId = 'YOUR_PIXEL_ID'; 
-    $accessToken = 'YOUR_ACCESS_TOKEN';
-
+    
     $data = [
         'data' => [
             [
@@ -54,15 +56,7 @@ class CompleteRegistrationObserver implements ObserverInterface
         ],
     ]; 
 
-    $endpoint = "https://graph.facebook.com/v13.0/{$pixelId}/events?access_token={$accessToken}";
-
-    try {
-        $this->curl->post($endpoint, json_encode($data));
-        $response = $this->curl->getBody();
-        $this->logger->info('Successfully sent CompleteRegistration event to Facebook: ' . $response);
-    } catch (\Exception $e) {
-        $this->logger->error('Error while sending CompleteRegistration data to Facebook: ' . $e->getMessage());
-    }
+   $this->FBHelper->sendEventToFacebook('CompleteRegistration', $data);
 }
 
 }

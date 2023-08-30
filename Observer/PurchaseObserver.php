@@ -6,22 +6,30 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Customer\Model\Session;
 use Magento\Framework\HTTP\Client\Curl;
+use Magento\TestFramework\Utility\ChildrenClassesSearch\F;
 use Psr\Log\LoggerInterface;
+use Robusta\FacebookConversions\Services\CAPI as FBHelper;
+
 
 class PurchaseObserver implements ObserverInterface
 {
     protected $customerSession;
     protected $curl;
     protected $logger;
+    protected $FBHelper;
+
 
     public function __construct(
         Session $customerSession,
         Curl $curl,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        FBHelper $FBHelper
+        
     ) {
         $this->customerSession = $customerSession;
         $this->curl = $curl;
         $this->logger = $logger;
+        $this->FBHelper = $FBHelper;
     }
 
     public function execute(Observer $observer)
@@ -36,10 +44,7 @@ class PurchaseObserver implements ObserverInterface
     public function sendPurchaseEventToFacebook($total, $customerEmail)
     {
         $this->logger->info('Purchase event in progress...');
-        
-        $pixelId = 'YOUR_PIXEL_ID'; 
-        $accessToken = 'YOUR_ACCESS_TOKEN';
-
+       
         $data = [
             'data' => [
                 [
@@ -55,16 +60,6 @@ class PurchaseObserver implements ObserverInterface
                 ],
             ],
         ]; 
-
-        $endpoint = "https://graph.facebook.com/v13.0/{$pixelId}/events?access_token={$accessToken}";
-
-        try {
-            $this->curl->post($endpoint, json_encode($data));
-            $response = $this->curl->getBody();
-            $this->logger->info('Successfully sent Purchase event to Facebook: ' . $response);
-
-        } catch (\Exception $e) {
-            $this->logger->error('Error while sending data to Facebook: ' . $e->getMessage());
-        }
+        $this->FBHelper->sendEventToFacebook('Purchase', $data);
     }
 }
