@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-
     <event name="sales_order_place_after">
         <observer name="facebook_purchase_event" instance="Robusta\FacebookConversions\Observer\PurchaseObserver" />
+    </event>
+    <event name="customer_register_success">
+        <observer name="facebook_complete_registration" instance="Robusta\FacebookConversions\Observer\CompleteRegistrationObserver"/>
     </event>
 </config>
