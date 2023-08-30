@@ -22,7 +22,8 @@ class CompleteRegistrationObserver implements ObserverInterface
     }
 
     public function execute(Observer $observer)
-    {
+    {$this->logger->info('Complete registration observer triggered');
+
         /** @var Customer $customer */
         $customer = $observer->getEvent()->getCustomer();
         $customerEmail = $customer->getEmail();

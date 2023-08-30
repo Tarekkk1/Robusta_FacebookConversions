@@ -6,4 +6,11 @@
     <type name="Magento\WishlistGraphQl\Model\Resolver\AddProductsToWishlist">
         <plugin name="robusta_facebookconversions_add_to_wishlist_graphql" type="Robusta\FacebookConversions\Plugin\AddToWishlistGraphQlPlugin" sortOrder="10"/>
     </type>
+    <type name="Magento\CatalogGraphQl\Model\Resolver\Products">
+        <plugin name="robusta_facebookconversions_search_graphql" type="Robusta\FacebookConversions\Plugin\SearchGraphQlPlugin" sortOrder="10"/>
+    </type>
+    <type name="Magento\CustomerGraphQl\Model\Resolver\CreateCustomer">
+        <plugin name="robusta_facebookconversions_create_customer_graphql" type="Robusta\FacebookConversions\Plugin\CreateCustomerGraphQlPlugin" sortOrder="10"/>
+    </type>
+
 </config>
