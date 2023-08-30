@@ -20,17 +20,27 @@ class SearchGraphQlPlugin
 
     public function afterResolve($subject, $result, $args)
     {
-             //print 
-             
-        try {
-            if (isset($args['search']) && $args['search']) {
-                $searchQuery = $args['search'];
-                $this->searchObserver->sendSearchEventToFacebook($searchQuery);
-            }
-        } catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
+        $searchQuery = null;
+    
+        // Check if $args is an object and has a 'search' property.
+        if (is_object($args) && isset($args->search)) {
+            $searchQuery = $args->search;
+        } 
+        elseif (is_array($args) && isset($args['search'])) {
+            $searchQuery = $args['search'];
         }
-
+    
+        if ($searchQuery) {
+            $this->logger->info('Search event in progress...');
+            try {
+                $this->searchObserver->sendSearchEventToFacebook($searchQuery);
+            } catch (\Exception $e) {
+                $this->logger->error($e->getMessage());
+            }
+        }
+    
         return $result;
     }
+    
+    
 }
