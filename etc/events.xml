@@ -1,12 +1,7 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
 
-    <event name="controller_action_postdispatch_wishlist_index_add">
-        <observer name="robusta_facebookconversions_add_to_wishlist" instance="Robusta\FacebookConversions\Observer\AddToWishlistObserver" />
+    <event name="sales_order_place_after">
+        <observer name="facebook_purchase_event" instance="Robusta\FacebookConversions\Observer\PurchaseObserver" />
     </event>
-
-    <event name="controller_action_postdispatch_checkout_cart_add">
-        <observer name="robusta_facebookconversions_add_to_cart" instance="Robusta\FacebookConversions\Observer\AddToCartObserver" />
-    </event>
-
 </config>

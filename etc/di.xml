@@ -5,4 +5,5 @@
     </type>
     <type name="Magento\WishlistGraphQl\Model\Resolver\AddProductsToWishlist">
         <plugin name="robusta_facebookconversions_add_to_wishlist_graphql" type="Robusta\FacebookConversions\Plugin\AddToWishlistGraphQlPlugin" sortOrder="10"/>
-    </config>
+    </type>
+</config>
