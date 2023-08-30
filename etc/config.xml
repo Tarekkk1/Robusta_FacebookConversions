@@ -1,0 +1,10 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <facebookconversions>
+            <general>
+                <pixel_id></pixel_id>
+                <access_token></access_token>
+            </general>
+        </facebookconversions>
+    </default>
+</config>

@@ -4,29 +4,45 @@ namespace Robusta\FacebookConversions\Services;
 
 use Magento\Framework\HTTP\Client\Curl;
 use Psr\Log\LoggerInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Store\Model\ScopeInterface;
 
 class CAPI
 {
     protected $curl;
     protected $logger;
 
-    const PIXEL_ID = 'YOUR_PIXEL_ID'; 
-    const ACCESS_TOKEN = 'YOUR_ACCESS_TOKEN';
+    const CONFIG_PATH_PIXEL_ID = 'facebookconversions/general/pixel_id';
+    const CONFIG_PATH_ACCESS_TOKEN = 'facebookconversions/general/access_token';
+    
+    protected $scopeConfig;
+    
     const ENDPOINT_BASE = "https://graph.facebook.com/v13.0/";
 
     public function __construct(
         Curl $curl,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        ScopeConfigInterface $scopeConfig
     ) {
         $this->curl = $curl;
-        $this->logger = $logger;
+    $this->logger = $logger;
+    $this->scopeConfig = $scopeConfig;
     }
 
     public function sendEventToFacebook($eventName, $data)
     {
        
 
-        $endpoint = self::ENDPOINT_BASE . self::PIXEL_ID . "/events?access_token=" . self::ACCESS_TOKEN;
+        $pixelId = $this->scopeConfig->getValue(self::CONFIG_PATH_PIXEL_ID, ScopeInterface::SCOPE_STORE);
+        $accessToken = $this->scopeConfig->getValue(self::CONFIG_PATH_ACCESS_TOKEN, ScopeInterface::SCOPE_STORE);
+
+        if (!$pixelId || !$accessToken) {
+            $this->logger->error('Pixel ID or Access Token is not set');
+            return;
+        }
+        
+        $this->logger->info('Sending ' . $eventName . ' event to Facebook...');
+        $endpoint = self::ENDPOINT_BASE . $pixelId . "/events?access_token=" . $accessToken;
 
         try {
             $this->curl->post($endpoint, json_encode($data));
