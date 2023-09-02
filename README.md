@@ -24,6 +24,3 @@ The extension will automatically send the following events to Facebook:
 * CompleteRegistration
 * Search
 
-You can also send custom events to Facebook using the `Robusta\FacebookConversions\Services\CAPI` class.
-
-
