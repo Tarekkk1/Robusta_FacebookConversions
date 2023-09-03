@@ -8,7 +8,7 @@ use Magento\Customer\Model\Session;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\TestFramework\Utility\ChildrenClassesSearch\F;
 use Psr\Log\LoggerInterface;
-use Robusta\FacebookConversions\Services\CAPI as FBHelper;
+use Robusta\FacebookConversions\Services\ConversionsAPI as ConversionsAPI;
 
 
 class PurchaseObserver implements ObserverInterface
@@ -16,20 +16,20 @@ class PurchaseObserver implements ObserverInterface
     protected $customerSession;
     protected $curl;
     protected $logger;
-    protected $FBHelper;
+    protected $conversionsAPI;
 
 
     public function __construct(
         Session $customerSession,
         Curl $curl,
         LoggerInterface $logger,
-        FBHelper $FBHelper
+        ConversionsAPI $conversionsAPI
         
     ) {
         $this->customerSession = $customerSession;
         $this->curl = $curl;
         $this->logger = $logger;
-        $this->FBHelper = $FBHelper;
+        $this->conversionsAPI = $conversionsAPI;
     }
 
     public function execute(Observer $observer)
@@ -60,6 +60,7 @@ class PurchaseObserver implements ObserverInterface
                 ],
             ],
         ]; 
-        $this->FBHelper->sendEventToFacebook('Purchase', $data);
-    }
+        
+        $this->conversionsAPI->sendEventToFacebook('Purchase', $data);
+    }    
 }

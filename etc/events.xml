@@ -3,5 +3,4 @@
     <event name="sales_order_place_after">
         <observer name="facebook_purchase_event" instance="Robusta\FacebookConversions\Observer\PurchaseObserver" />
     </event>
-
 </config>

@@ -7,7 +7,7 @@ use Psr\Log\LoggerInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 
-class CAPI
+class ConversionsAPI
 {
     protected $curl;
     protected $logger;
@@ -25,14 +25,12 @@ class CAPI
         ScopeConfigInterface $scopeConfig
     ) {
         $this->curl = $curl;
-    $this->logger = $logger;
-    $this->scopeConfig = $scopeConfig;
+        $this->logger = $logger;
+        $this->scopeConfig = $scopeConfig;
     }
 
     public function sendEventToFacebook($eventName, $data)
     {
-       
-
         $pixelId = $this->scopeConfig->getValue(self::CONFIG_PATH_PIXEL_ID, ScopeInterface::SCOPE_STORE);
         $accessToken = $this->scopeConfig->getValue(self::CONFIG_PATH_ACCESS_TOKEN, ScopeInterface::SCOPE_STORE);
 
@@ -48,7 +46,8 @@ class CAPI
             $this->curl->post($endpoint, json_encode($data));
             $response = $this->curl->getBody();
             $this->logger->info('Successfully sent ' . $eventName . ' event to Facebook: ' . $response);
-        } catch (\Exception $e) {
+        } 
+        catch (\Exception $e) {
             $this->logger->error('Error while sending data to Facebook: ' . $e->getMessage());
         }
     }

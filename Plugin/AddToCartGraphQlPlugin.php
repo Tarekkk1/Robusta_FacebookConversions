@@ -2,56 +2,84 @@
 
 namespace Robusta\FacebookConversions\Plugin;
 
-use Robusta\FacebookConversions\Observer\AddToCartObserver;
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Robusta\FacebookConversions\Services\ConversionsAPI;
 
 class AddToCartGraphQlPlugin
 {
     protected $addToCartObserver;
     protected $logger;
     protected $productRepository;
+    protected $conversionsAPI;  
 
     public function __construct(
-        AddToCartObserver $addToCartObserver,
         \Psr\Log\LoggerInterface $logger,
-        ProductRepositoryInterface $productRepository
+        ProductRepositoryInterface $productRepository,
+        ConversionsAPI $conversionsAPI   
     ) {
-        $this->addToCartObserver = $addToCartObserver;
         $this->logger = $logger;
         $this->productRepository = $productRepository;
+        $this->conversionsAPI = $conversionsAPI;  
     }
 
     public function afterExecute($subject, $result, $cart, $cartItems)
     {
-       
-
-        try {
-            if (isset($cartItems['data']) && is_array($cartItems['data'])) {
-                $data = $cartItems['data'];
-                $sku = isset($data['sku']) ? $data['sku'] : null;
-                $qty = isset($data['quantity']) ? $data['quantity'] : 0;
-
-                if ($sku) {
-                    $product = $this->productRepository->get($sku);
-                    if ($product) {
-                        $customerEmail = ''; 
-                        if ($cart->getCustomer() && $cart->getCustomer()->getId()) {
-                            $customerEmail = $cart->getCustomer()->getEmail();
-                        }
-                        $this->addToCartObserver->sendAddToCartEventToFacebook($product, $qty, $customerEmail);
-                    } else {
-                        $this->logger->warning('Product with SKU ' . $sku . ' not found.');
-                    }
-                } else {
-                    $this->logger->warning('SKU not found in cart items data.');
-                }
-            } else {
-                $this->logger->warning('Unexpected cart items format.');
-            }
-        } catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
+        if (!isset($cartItems['data']) || !is_array($cartItems['data'])) {
+            $this->logger->warning('Unexpected cart items format.');
+            return $result;
         }
 
+        $data = $cartItems['data'];
+        $sku = isset($data['sku']) ? $data['sku'] : null;
+        $qty = isset($data['quantity']) ? $data['quantity'] : 0;
+
+        if (!$sku) {
+            $this->logger->warning('SKU not found in cart items data.');
+            return $result;
+        }
+
+        $product = $this->productRepository->get($sku);
+
+        if (!$product) {
+            $this->logger->warning('Product with SKU ' . $sku . ' not found.');
+            return $result;
+        }
+
+        $customerEmail = '';
+
+        if ($cart->getCustomer() && $cart->getCustomer()->getId()) {
+            $customerEmail = $cart->getCustomer()->getEmail();
+        }
+        
+        $this->logger->info('AddToCart event in progress...');
+
+        try{  
+            $data = [
+                'data' => [
+                    [
+                        'event_name' => 'AddToCart',
+                        'event_time' => time(),
+                        'user' => [
+                            'email' => hash('sha256', $customerEmail)
+                        ],
+                        'custom_data' => [
+                            'product_name' => $product->getName(),
+                            'product_id' => $product->getId(),
+                            'quantity' => $qty,
+                            'price' => $product->getFinalPrice(),
+                        ],
+                    ],
+                ],
+            ]; 
+    
+            $this->conversionsAPI->sendEventToFacebook('AddToCart', $data);
+    
+        } 
+        catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+        }
+    
         return $result;
     }
+    
 }

@@ -1,46 +1,56 @@
 <?php
+
 namespace Robusta\FacebookConversions\Plugin;
 
-use Robusta\FacebookConversions\Observer\SearchObserver;
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\TestFramework\ErrorLog\Logger;
+use Robusta\FacebookConversions\Services\ConversionsAPI;
 
 class SearchGraphQlPlugin
 {
-    protected $searchObserver;
     protected $logger;
+    protected $conversionsAPI;
 
     public function __construct(
-        SearchObserver $searchObserver,
-        \Psr\Log\LoggerInterface $logger
+        \Psr\Log\LoggerInterface $logger,
+        ConversionsAPI $conversionsAPI
     ) {
-        $this->searchObserver = $searchObserver;
         $this->logger = $logger;
+        $this->conversionsAPI = $conversionsAPI;
     }
 
     public function afterResolve($subject, $result, $args)
     {
-        $searchQuery = null;
-    
-        // Check if $args is an object and has a 'search' property.
-        if (is_object($args) && isset($args->search)) {
-            $searchQuery = $args->search;
+        if (!is_array($args) || !isset($args['search'])) {
+            return $result;
+        }
+
+        $searchQuery = $args['search'];
+
+        if (!$searchQuery) {
+            return $result;
+        }
+
+        $this->logger->info('Search event in progress...');
+
+        try {
+            $eventData = [
+                'data' => [
+                    [
+                        'event_name' => 'Search',
+                        'event_time' => time(),
+                        'custom_data' => [
+                            'search_string' => $searchQuery,
+                        ],
+                    ],
+                ],
+            ];
+
+            $this->conversionsAPI->sendEventToFacebook('Search', $eventData);
+
         } 
-        elseif (is_array($args) && isset($args['search'])) {
-            $searchQuery = $args['search'];
+        catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
         }
-    
-        if ($searchQuery) {
-            $this->logger->info('Search event in progress...');
-            try {
-                $this->searchObserver->sendSearchEventToFacebook($searchQuery);
-            } catch (\Exception $e) {
-                $this->logger->error($e->getMessage());
-            }
-        }
-    
+
         return $result;
     }
-    
-    
 }
