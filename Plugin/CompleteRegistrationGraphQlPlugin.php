@@ -3,18 +3,22 @@
 namespace Robusta\FacebookConversions\Plugin;
 
 use Robusta\FacebookConversions\Services\ConversionsAPI;
+use Magento\Store\Model\StoreManagerInterface;
 
 class CompleteRegistrationGraphQlPlugin
 {
     protected $logger;
     protected $conversionsAPI;
+    protected $storeManager;
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
-        ConversionsAPI $conversionsAPI
+        ConversionsAPI $conversionsAPI,
+        StoreManagerInterface $storeManager
     ) {
         $this->logger = $logger;
         $this->conversionsAPI = $conversionsAPI;
+        $this->storeManager = $storeManager;
     }
 
     public function afterResolve($subject, $result)
@@ -35,6 +39,8 @@ class CompleteRegistrationGraphQlPlugin
             $this->logger->info('Create Customer event in progress...');
             $this->logger->info('Customer email: ' . $customer['email']);
             
+            $currencyCode = $this->storeManager->getStore()->getCurrentCurrencyCode();
+        
             $eventData = [
                 'data' => [
                     [
@@ -44,14 +50,16 @@ class CompleteRegistrationGraphQlPlugin
                             'email' => hash('sha256', $customer['email'])
                         ],
                         'custom_data' => [
-                            'status' => 'Completed'
+                            'content_name' => 'Registration',
+                            'currency' => $currencyCode,
+                            'status' => 'Completed',
+                            'value' => 0,
                         ],
                     ],
                 ],
             ];
-
+        
             $this->conversionsAPI->sendEventToFacebook('CompleteRegistration', $eventData);
-
         } 
         catch (\Exception $e) {
             $this->logger->error($e->getMessage());
