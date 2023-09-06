@@ -48,9 +48,8 @@ class AddToWishlistGraphQlPlugin
             $product = $this->productRepository->get($sku);
 
             $customerEmail = '';
-            if ($wishlist->getCustomer() && $wishlist->getCustomer()->getEmail()) {
-                $customerEmail = $wishlist->getCustomer()->getEmail();
-            }
+            $customerEmail = $wishlist->getCustomer()->getEmail();
+         
 
             $this->logger->info('AddToWishlist event in progress...');
             

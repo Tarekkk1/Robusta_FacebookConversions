@@ -35,11 +35,13 @@ class PurchaseObserver implements ObserverInterface
         $contentIds = [];
         foreach ($items as $item) {
             $contents[] = [
-                'id' => (string)$item->getProductId(),
+                'id' => (string)$item->getSku(),
                 'quantity' => $item->getQtyOrdered(),
-                'item_price' => $item->getPrice()
+                'content_name' => $item->getName(),
+                'item_price' => $item->getPrice(),
+                'content_category' => $item->getCategory() ? $item->getCategory()->getName() : 'Default',
             ];
-            $contentIds[] = (string)$item->getProductId();
+            $contentIds[] = (string)$item->getSku();
         }
 
         $this->sendPurchaseEventToFacebook($total, $customerEmail, $currency, $contents, $contentIds);
@@ -62,7 +64,7 @@ class PurchaseObserver implements ObserverInterface
                         'value' => $total,
                         'contents' => $contents,
                         'content_ids' => $contentIds,
-                        'content_type' => 'product',
+                        'content_type' => 'product', 
                         'num_items' => count($contents)
                     ],
                 ],
