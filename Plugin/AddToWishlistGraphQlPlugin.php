@@ -46,8 +46,6 @@ class AddToWishlistGraphQlPlugin
 
         try {
             $product = $this->productRepository->get($sku);
-
-            $customerEmail = '';
             $customerEmail = $wishlist->getCustomer()->getEmail();
          
 

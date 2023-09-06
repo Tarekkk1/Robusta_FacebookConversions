@@ -50,17 +50,12 @@ class AddToCartGraphQlPlugin
                     $this->logger->warning('Cart item not found for SKU: ' . $sku);
                     continue;
                 }
-
-                $customerEmail = '';
                 $customerEmail = $cart->getCustomer()->getEmail();
-               
-                
                 $currencyCode = $this->storeManager->getStore()->getCurrentCurrencyCode();
 
                 $eventData = [
                     'event_name' => 'AddToCart',
                     'event_time' => time(),
-                    // 'event_source_url' => (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]",
                     'user' => [
                         'email' => hash('sha256', $customerEmail),
                     ],
