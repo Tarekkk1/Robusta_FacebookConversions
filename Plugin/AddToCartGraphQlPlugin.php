@@ -2,56 +2,84 @@
 
 namespace Robusta\FacebookConversions\Plugin;
 
-use Robusta\FacebookConversions\Observer\AddToCartObserver;
-use Magento\Catalog\Api\ProductRepositoryInterface;
+use Robusta\FacebookConversions\Services\ConversionsAPI;
+use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Quote\Model\MaskedQuoteIdToQuoteIdInterface;
 
 class AddToCartGraphQlPlugin
 {
-    protected $addToCartObserver;
     protected $logger;
-    protected $productRepository;
+    protected $conversionsAPI;
+    protected $storeManager;
+    protected $maskedQuoteIdToQuoteId;
+    protected $cartRepository; 
+    
 
     public function __construct(
-        AddToCartObserver $addToCartObserver,
         \Psr\Log\LoggerInterface $logger,
-        ProductRepositoryInterface $productRepository
+        ConversionsAPI $conversionsAPI,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
+        MaskedQuoteIdToQuoteIdInterface $maskedQuoteIdToQuoteId,
+        CartRepositoryInterface $cartRepository 
     ) {
-        $this->addToCartObserver = $addToCartObserver;
         $this->logger = $logger;
-        $this->productRepository = $productRepository;
+        $this->conversionsAPI = $conversionsAPI;
+        $this->storeManager = $storeManager;
+        $this->maskedQuoteIdToQuoteId = $maskedQuoteIdToQuoteId;
+        $this->cartRepository = $cartRepository; 
     }
 
-    public function afterExecute($subject, $result, $cart, $cartItems)
+    public function afterExecute($subject, $result, $maskedCartId, $cartItems)
     {
-       
+        $cartId = $this->maskedQuoteIdToQuoteId->execute($maskedCartId);
+        $cart = $this->cartRepository->get($cartId);
+        
+        $eventsData = [];
+        foreach ($cartItems as $cartItemData) {
+            try {
+                $sku = $cartItemData['sku'] ?? null;
+                $qty = $cartItemData['quantity'] ?? 0;
 
-        try {
-            if (isset($cartItems['data']) && is_array($cartItems['data'])) {
-                $data = $cartItems['data'];
-                $sku = isset($data['sku']) ? $data['sku'] : null;
-                $qty = isset($data['quantity']) ? $data['quantity'] : 0;
-
-                if ($sku) {
-                    $product = $this->productRepository->get($sku);
-                    if ($product) {
-                        $customerEmail = ''; 
-                        if ($cart->getCustomer() && $cart->getCustomer()->getId()) {
-                            $customerEmail = $cart->getCustomer()->getEmail();
-                        }
-                        $this->addToCartObserver->sendAddToCartEventToFacebook($product, $qty, $customerEmail);
-                    } else {
-                        $this->logger->warning('Product with SKU ' . $sku . ' not found.');
-                    }
-                } else {
+                if (!$sku) {
                     $this->logger->warning('SKU not found in cart items data.');
+                    continue;
                 }
-            } else {
-                $this->logger->warning('Unexpected cart items format.');
+                
+                $cartItem = $cart->getItemByProductSku($sku);
+                if (!$cartItem) {
+                    $this->logger->warning('Cart item not found for SKU: ' . $sku);
+                    continue;
+                }
+                $customerEmail = $cart->getCustomer()->getEmail();
+                $currencyCode = $this->storeManager->getStore()->getCurrentCurrencyCode();
+
+                $eventData = [
+                    'event_name' => 'AddToCart',
+                    'event_time' => time(),
+                    'user' => [
+                        'email' => hash('sha256', $customerEmail),
+                    ],
+                    'custom_data' => [
+                        'content_name' => $cartItem->getName(),
+                        'content_id' => $cartItem->getSku(),
+                        'quantity' => $qty,
+                        'value' => $cartItem->getPrice(),
+                        'currency' => $currencyCode,
+                    ],
+                ];
+                
+                $eventsData[] = $eventData;
+
+            } catch (\Exception $e) {
+                $this->logger->error($e->getMessage());
             }
-        } catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
+        }
+
+        if (!empty($eventsData)) {
+            $this->conversionsAPI->sendEventToFacebook('AddToCart', ['data' => $eventsData]);
         }
 
         return $result;
     }
+
 }

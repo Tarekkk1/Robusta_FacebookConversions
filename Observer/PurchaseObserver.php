@@ -5,31 +5,23 @@ namespace Robusta\FacebookConversions\Observer;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Customer\Model\Session;
-use Magento\Framework\HTTP\Client\Curl;
-use Magento\TestFramework\Utility\ChildrenClassesSearch\F;
 use Psr\Log\LoggerInterface;
-use Robusta\FacebookConversions\Services\CAPI as FBHelper;
-
+use Robusta\FacebookConversions\Services\ConversionsAPI as ConversionsAPI;
 
 class PurchaseObserver implements ObserverInterface
 {
     protected $customerSession;
-    protected $curl;
     protected $logger;
-    protected $FBHelper;
-
+    protected $conversionsAPI;
 
     public function __construct(
         Session $customerSession,
-        Curl $curl,
         LoggerInterface $logger,
-        FBHelper $FBHelper
-        
+        ConversionsAPI $conversionsAPI
     ) {
         $this->customerSession = $customerSession;
-        $this->curl = $curl;
         $this->logger = $logger;
-        $this->FBHelper = $FBHelper;
+        $this->conversionsAPI = $conversionsAPI;
     }
 
     public function execute(Observer $observer)
@@ -37,14 +29,28 @@ class PurchaseObserver implements ObserverInterface
         $order = $observer->getEvent()->getOrder();
         $customerEmail = $order->getCustomerEmail();
         $total = $order->getGrandTotal();
+        $currency = $order->getOrderCurrencyCode();
+        $items = $order->getAllVisibleItems();
+        $contents = [];
+        $contentIds = [];
+        foreach ($items as $item) {
+            $contents[] = [
+                'id' => $item->getSku(),
+                'quantity' => $item->getQtyOrdered(),
+                'content_name' => $item->getName(),
+                'item_price' => $item->getPrice(),
+                'content_category' => $item->getCategory() ? $item->getCategory()->getName() : 'Default',
+            ];
+            $contentIds[] = $item->getSku();
+        }
 
-        $this->sendPurchaseEventToFacebook($total, $customerEmail);
+        $this->sendPurchaseEventToFacebook($total, $customerEmail, $currency, $contents, $contentIds);
     }
 
-    public function sendPurchaseEventToFacebook($total, $customerEmail)
+    public function sendPurchaseEventToFacebook($total, $customerEmail, $currency, $contents, $contentIds)
     {
         $this->logger->info('Purchase event in progress...');
-       
+
         $data = [
             'data' => [
                 [
@@ -54,12 +60,17 @@ class PurchaseObserver implements ObserverInterface
                         'email' => hash('sha256', $customerEmail)
                     ],
                     'custom_data' => [
-                        'currency' => 'USD',  
-                          'value' => $total
+                        'currency' => $currency,
+                        'value' => $total,
+                        'contents' => $contents,
+                        'content_ids' => $contentIds,
+                        'content_type' => 'product', 
+                        'num_items' => count($contents)
                     ],
                 ],
             ],
-        ]; 
-        $this->FBHelper->sendEventToFacebook('Purchase', $data);
+        ];
+
+        $this->conversionsAPI->sendEventToFacebook('Purchase', $data);
     }
 }

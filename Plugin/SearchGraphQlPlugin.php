@@ -1,46 +1,82 @@
 <?php
+
 namespace Robusta\FacebookConversions\Plugin;
 
-use Robusta\FacebookConversions\Observer\SearchObserver;
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\TestFramework\ErrorLog\Logger;
+use Robusta\FacebookConversions\Services\ConversionsAPI;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Catalog\Model\CategoryRepository;
 
 class SearchGraphQlPlugin
 {
-    protected $searchObserver;
     protected $logger;
+    protected $conversionsAPI;
+    protected $storeManager;
+    protected $categoryRepository;
 
     public function __construct(
-        SearchObserver $searchObserver,
-        \Psr\Log\LoggerInterface $logger
+        \Psr\Log\LoggerInterface $logger,
+        ConversionsAPI $conversionsAPI,
+        StoreManagerInterface $storeManager,
+        CategoryRepository $categoryRepository
     ) {
-        $this->searchObserver = $searchObserver;
         $this->logger = $logger;
+        $this->conversionsAPI = $conversionsAPI;
+        $this->storeManager = $storeManager;
+        $this->categoryRepository = $categoryRepository;
     }
 
     public function afterResolve($subject, $result, $args)
     {
-        $searchQuery = null;
-    
-        // Check if $args is an object and has a 'search' property.
-        if (is_object($args) && isset($args->search)) {
-            $searchQuery = $args->search;
+        if (!is_array($args) || !isset($args['search'])) {
+            return $result;
+        }
+
+        $searchQuery = $args['search'];
+
+        if (!$searchQuery) {
+            return $result;
+        }
+
+        $this->logger->info('Search event in progress...');
+
+        $currencyCode = $this->storeManager->getStore()->getCurrentCurrencyCode();
+        $categoryName = 'Default'; 
+
+        $contentsArray = [];
+        $contents = $result['products']['items'];
+        foreach ($contents as $content) {
+            $contentsArray[] = [
+                'id' => $content['sku'],
+                'quantity' => 1,
+            ];
+        }
+
+        try {
+            $eventData = [
+                'data' => [
+                    [
+                        'event_name' => 'Search',
+                        'event_time' => time(),
+                        'custom_data' => [
+                            'content_category' => $categoryName,
+                            'content_ids' => array_column($contentsArray, 'id'),
+                            'content_type' => 'product',
+                            'contents' => $contentsArray,
+                            'currency' => $currencyCode,
+                            'search_string' => $searchQuery,
+                            'value' => 0,
+                        ],
+                    ],
+                ],
+            ];
+
+            $this->conversionsAPI->sendEventToFacebook('Search', $eventData);
+
         } 
-        elseif (is_array($args) && isset($args['search'])) {
-            $searchQuery = $args['search'];
+        catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
         }
-    
-        if ($searchQuery) {
-            $this->logger->info('Search event in progress...');
-            try {
-                $this->searchObserver->sendSearchEventToFacebook($searchQuery);
-            } catch (\Exception $e) {
-                $this->logger->error($e->getMessage());
-            }
-        }
-    
+
         return $result;
     }
-    
-    
 }
