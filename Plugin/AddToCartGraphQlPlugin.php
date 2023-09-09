@@ -2,31 +2,31 @@
 
 namespace Robusta\FacebookConversions\Plugin;
 
-use Robusta\FacebookConversions\Services\ConversionsAPI;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Model\MaskedQuoteIdToQuoteIdInterface;
+use Magento\Framework\MessageQueue\PublisherInterface;
 
 class AddToCartGraphQlPlugin
 {
     protected $logger;
-    protected $conversionsAPI;
+    protected $publisher;
     protected $storeManager;
     protected $maskedQuoteIdToQuoteId;
-    protected $cartRepository; 
-    
+    protected $cartRepository;
+    const TOPIC_NAME = 'facebookconversions.addtocart';
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
-        ConversionsAPI $conversionsAPI,
+        PublisherInterface $publisher,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         MaskedQuoteIdToQuoteIdInterface $maskedQuoteIdToQuoteId,
         CartRepositoryInterface $cartRepository 
     ) {
         $this->logger = $logger;
-        $this->conversionsAPI = $conversionsAPI;
+        $this->publisher = $publisher;
         $this->storeManager = $storeManager;
         $this->maskedQuoteIdToQuoteId = $maskedQuoteIdToQuoteId;
-        $this->cartRepository = $cartRepository; 
+        $this->cartRepository = $cartRepository;
     }
 
     public function afterExecute($subject, $result, $maskedCartId, $cartItems)
@@ -76,10 +76,9 @@ class AddToCartGraphQlPlugin
         }
 
         if (!empty($eventsData)) {
-            $this->conversionsAPI->sendEventToFacebook('AddToCart', ['data' => $eventsData]);
+            $this->publisher->publish(self::TOPIC_NAME, $eventsData);
         }
 
         return $result;
     }
-
 }
