@@ -5,6 +5,8 @@ namespace Robusta\FacebookConversions\Plugin;
 use Robusta\FacebookConversions\Services\ConversionsAPI;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Catalog\Model\CategoryRepository;
+use Magento\Framework\MessageQueue\PublisherInterface;
+
 
 class SearchGraphQlPlugin
 {
@@ -12,17 +14,21 @@ class SearchGraphQlPlugin
     protected $conversionsAPI;
     protected $storeManager;
     protected $categoryRepository;
+    protected $messageQueue;
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
         ConversionsAPI $conversionsAPI,
         StoreManagerInterface $storeManager,
-        CategoryRepository $categoryRepository
+        CategoryRepository $categoryRepository,
+        PublisherInterface $messageQueue
+
     ) {
         $this->logger = $logger;
         $this->conversionsAPI = $conversionsAPI;
         $this->storeManager = $storeManager;
         $this->categoryRepository = $categoryRepository;
+        $this->messageQueue = $messageQueue;
     }
 
     public function afterResolve($subject, $result, $args)
@@ -70,8 +76,8 @@ class SearchGraphQlPlugin
                 ],
             ];
 
-            $this->conversionsAPI->sendEventToFacebook('Search', $eventData);
-
+            $this->messageQueue->publish('facebookconversions.search', json_encode($eventData));
+  
         } 
         catch (\Exception $e) {
             $this->logger->error($e->getMessage());

@@ -19,7 +19,20 @@
                 <item name="facebookconversions_addtocart_consumer" xsi:type="array">
                     <item name="instanceType" xsi:type="string">Robusta\FacebookConversions\Model\Consumer\AddToCartConsumer</item>
                 </item>
+                <item name="facebookconversions_addtowishlist_consumer" xsi:type="array">
+                    <item name="instanceType" xsi:type="string">Robusta\FacebookConversions\Model\Consumer\AddToWishlistConsumer</item>
+                </item>
+                <item name="facebookconversions_search_consumer" xsi:type="array">
+                    <item name="instanceType" xsi:type="string">Robusta\FacebookConversions\Model\Consumer\SearchConsumer</item>
+                </item>
+                <item name="facebookconversions_completeregistration_consumer" xsi:type="array">
+                    <item name="instanceType" xsi:type="string">Robusta\FacebookConversions\Model\Consumer\CompleteRegistrationConsumer</item>
+                </item>
+                <item name="facebookconversions_purchaseorder_consumer" xsi:type="array">
+                    <item name="instanceType" xsi:type="string">Robusta\FacebookConversions\Model\Consumer\PurchaseOrderConsumer</item>
+                </item>
             </argument>
         </arguments>
     </type>
 </config>
+

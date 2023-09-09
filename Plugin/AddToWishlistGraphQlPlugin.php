@@ -6,7 +6,7 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\CategoryRepository;
 use Magento\Store\Model\StoreManagerInterface;
 use Robusta\FacebookConversions\Services\ConversionsAPI;
-
+use Magento\Framework\MessageQueue\PublisherInterface;
 class AddToWishlistGraphQlPlugin
 {
     protected $logger;
@@ -14,19 +14,22 @@ class AddToWishlistGraphQlPlugin
     protected $categoryRepository;
     protected $storeManager;
     protected $conversionsAPI;
+    protected $publisher;
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
         ProductRepositoryInterface $productRepository,
         CategoryRepository $categoryRepository,
         StoreManagerInterface $storeManager,
-        ConversionsAPI $conversionsAPI
+        ConversionsAPI $conversionsAPI,
+        PublisherInterface $publisher
     ) {
         $this->logger = $logger;
         $this->productRepository = $productRepository;
         $this->categoryRepository = $categoryRepository;
         $this->storeManager = $storeManager;
         $this->conversionsAPI = $conversionsAPI;
+        $this->publisher = $publisher; 
     }
 
     public function afterExecute($subject, $result, $wishlist, $wishlistItems)
@@ -85,8 +88,8 @@ class AddToWishlistGraphQlPlugin
                     ],
                 ],
             ];
+            $this->publisher->publish('facebookconversions.addtowishlist', $eventData);
 
-            $this->conversionsAPI->sendEventToFacebook('AddToWishlist', $eventData);
         } 
         catch (\Exception $e) {
             $this->logger->error($e->getMessage());
