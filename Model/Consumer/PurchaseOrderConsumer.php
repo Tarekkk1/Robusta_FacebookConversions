@@ -6,51 +6,61 @@ use Robusta\FacebookConversions\Services\ConversionsAPI;
 class PurchaseOrderConsumer
 {
     protected $conversionsAPI;
+    protected $orderRepository;
 
-    public function __construct(ConversionsAPI $conversionsAPI)
-    {
+    public function __construct(
+        ConversionsAPI $conversionsAPI,
+        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository
+    ) {
         $this->conversionsAPI = $conversionsAPI;
+        $this->orderRepository = $orderRepository;
     }
 
-    public function processMessage($data)
+    public function processMessage($message)
     {
-        $total = $data['total'];
-        $customerEmail = $data['customerEmail'];
-        $currency = $data['currency'];
-        $items = $data['items'];
-        $contents = [];
-        $contentIds = [];
-        foreach ($items as $item) {
-            $contents[] = [
-                'id' => $item->getSku(),
-                'quantity' => $item->getQtyOrdered(),
-                'content_name' => $item->getName(),
-                'item_price' => $item->getPrice(),
-                'content_category' => $item->getCategory() ? $item->getCategory()->getName() : 'Default',
+        $data = json_decode($message, true);
+        $orderId = $data['order_id'];
+        $order = $this->orderRepository->get($orderId);
+
+        $itemsData = [];
+        foreach ($order->getAllVisibleItems() as $item) {
+            $itemsData[] = [
+                'sku' => $item->getSku(),
+                'qty_ordered' => $item->getQtyOrdered(),
+                'name' => $item->getName(),
+                'price' => $item->getPrice(),
+                'category_name' => $item->getCategory() ? $item->getCategory()->getName() : 'Default'
             ];
-            $contentIds[] = $item->getSku();
         }
 
-        $this->sendPurchaseEventToFacebook($total, $customerEmail, $currency, $contents, $contentIds);
+        $data = [
+            'customerEmail' => $order->getCustomerEmail(),
+            'total' => $order->getGrandTotal(),
+            'currency' => $order->getOrderCurrencyCode(),
+            'items' => $itemsData,
+            'event_time' => $data['event_time'],
+        ];
+
+        $this->sendPurchaseEventToFacebook($data);
     }
 
-    public function sendPurchaseEventToFacebook($total, $customerEmail, $currency, $contents, $contentIds)
+    public function sendPurchaseEventToFacebook($data)
     {
         $eventData = [
             'data' => [
                 [
                     'event_name' => 'Purchase',
-                    'event_time' => time(),
+                    'event_time' => $data['event_time'],
                     'user' => [
-                        'email' => hash('sha256', $customerEmail)
+                        'email' => hash('sha256', $data['customerEmail'])
                     ],
                     'custom_data' => [
-                        'currency' => $currency,
-                        'value' => $total,
-                        'contents' => $contents,
-                        'content_ids' => $contentIds,
+                        'currency' => $data['currency'],
+                        'value' => $data['total'],
+                        'contents' => $data['items'],
+                        'content_ids' => array_column($data['items'], 'sku'),
                         'content_type' => 'product', 
-                        'num_items' => count($contents)
+                        'num_items' => count($data['items'])
                     ],
                 ],
             ],

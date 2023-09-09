@@ -30,13 +30,11 @@ class PurchaseObserver implements ObserverInterface
             $this->logger->error('Order not found.');
             return;
         }
-        $data = [
-            'customerEmail' => $order->getCustomerEmail(),
-            'total' => $order->getGrandTotal(),
-            'currency' => $order->getOrderCurrencyCode(),
-            'items' => $order->getAllVisibleItems(),
-        ];
 
-        $this->publisher->publish('facebookconversions.purchaseorder', $data);
+        $data = [
+            'order_id' => $order->getId(),
+            'event_time' => time(),
+        ];
+        $this->publisher->publish('facebookconversions.purchaseorder', json_encode($data));
     }
-} 
+}

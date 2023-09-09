@@ -62,7 +62,7 @@ class CompleteRegistrationGraphQlPlugin
                     ],
                 ],
             ];
-            $this->publisher->publish('facebookconversions.completeregistration', $eventData);
+            $this->publisher->publish('facebookconversions.completeregistration', json_encode($eventData));
          } 
         catch (\Exception $e) {
             $this->logger->error($e->getMessage());
