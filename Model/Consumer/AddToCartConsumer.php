@@ -30,7 +30,7 @@ class AddToCartConsumer
 
     public function processMessage( $data)
     {  
-         $message = json_decode($data, true);
+        $message = json_decode($data, true);
         $maskedCartId = $message['masked_cart_id'];
         $cartItems = $message['cart_items'];
         $eventTime = $message['event_time'];
