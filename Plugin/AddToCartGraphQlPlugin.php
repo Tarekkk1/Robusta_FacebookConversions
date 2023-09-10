@@ -1,4 +1,5 @@
 <?php
+
 namespace Robusta\FacebookConversions\Plugin;
 
 use Magento\Framework\MessageQueue\PublisherInterface;
@@ -7,7 +8,7 @@ class AddToCartGraphQlPlugin
 {
     protected $logger;
     protected $publisher;
-    const TOPIC_NAME = 'facebookconversions.addtocart';
+    const TOPIC_NAME = 'robusta.facebook.addtocart';
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
