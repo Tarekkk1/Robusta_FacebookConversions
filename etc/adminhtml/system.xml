@@ -15,14 +15,14 @@
                     <comment><![CDATA[Enter your Facebook Pixel ID here.]]></comment>
                     <frontend_model>Magento\Config\Block\System\Config\Form\Field</frontend_model>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
-                    <type>text</type>
+                    <!-- <type>text</type> -->
                 </field>
                 <field id="access_token" translate="label comment" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Access Token</label>
                     <comment><![CDATA[Enter your Facebook Access Token here.]]></comment>
                     <frontend_model>Magento\Config\Block\System\Config\Form\Field</frontend_model>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
-                    <type>password</type>
+                    <!-- <type>password</type> -->
                 </field>
             </group>
         </section>
