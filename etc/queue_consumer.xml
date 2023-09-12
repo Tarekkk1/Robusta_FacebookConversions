@@ -1,4 +1,8 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework-message-queue:etc/consumer.xsd">
     <consumer name="robusta.facebook.addtocart" queue="facebookAddToCartQueue" connection="amqp" maxMessages="1000" handler="Robusta\FacebookConversions\Model\Consumer\AddToCartConsumer::processMessage"/>
+    <consumer name="robusta.facebook.addtowishlist" queue="facebookAddToWishlistQueue" connection="amqp" maxMessages="1000" handler="Robusta\FacebookConversions\Model\Consumer\AddToWishlistConsumer::processMessage"/>
+    <consumer name="robusta.facebook.purchase" queue="facebookPurchaseQueue" connection="amqp" maxMessages="1000" handler="Robusta\FacebookConversions\Model\Consumer\PurchaseConsumer::processMessage"/>
+    <consumer name="robusta.facebook.search" queue="facebookSearchQueue" connection="amqp" maxMessages="1000" handler="Robusta\FacebookConversions\Model\Consumer\SearchConsumer::processMessage"/>
+    <consumer name="robusta.facebook.registration" queue="facebookRegistrationQueue" connection="amqp" maxMessages="1000" handler="Robusta\FacebookConversions\Model\Consumer\RegistrationConsumer::processMessage"/>
 </config>

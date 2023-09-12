@@ -3,4 +3,16 @@
     <exchange name="robusta.facebook.addtocart" type="topic" connection="amqp">
         <binding id="robusta.facebook.addtocart" topic="robusta.facebook.addtocart" destinationType="queue" destination="facebookAddToCartQueue"/>
     </exchange>
+    <exchange name="robusta.facebook.addtowishlist" type="topic" connection="amqp">
+        <binding id="robusta.facebook.addtowishlist" topic="robusta.facebook.addtowishlist" destinationType="queue" destination="facebookAddToWishlistQueue"/>
+    </exchange>
+    <exchange name="robusta.facebook.purchase" type="topic" connection="amqp">
+        <binding id="robusta.facebook.purchase" topic="robusta.facebook.purchase" destinationType="queue" destination="facebookPurchaseQueue"/>
+    </exchange>
+    <exchange name="robusta.facebook.search" type="topic" connection="amqp">
+        <binding id="robusta.facebook.search" topic="robusta.facebook.search" destinationType="queue" destination="facebookSearchQueue"/>
+    </exchange>
+    <exchange name="robusta.facebook.registration" type="topic" connection="amqp">
+        <binding id="robusta.facebook.registration" topic="robusta.facebook.registration" destinationType="queue" destination="facebookRegistrationQueue"/>
+    </exchange>
 </config>

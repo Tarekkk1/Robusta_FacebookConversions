@@ -1,4 +1,9 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Communication/etc/communication.xsd">
     <topic name="robusta.facebook.addtocart" request="string"/>
+    <topic name="robusta.facebook.addtowishlist" request="string"/>
+    <topic name="robusta.facebook.purchase" request="string"/>
+    <topic name="robusta.facebook.search" request="string"/>
+    <topic name="robusta.facebook.registration" request="string"/>
+
 </config>
