@@ -16,6 +16,7 @@ class CompleteRegistrationConsumer
 
     public function processMessage( $message)
     {
+        $this->logger->info('CompleteRegistrationConsumer: ' . $message);
         $eventData = json_decode($message, true);
         try {
             $this->conversionsAPI->sendEventToFacebook('CompleteRegistration', $eventData);
