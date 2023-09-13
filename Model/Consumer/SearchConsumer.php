@@ -20,6 +20,7 @@ class SearchConsumer
 
     public function processMessage($message)
     {
+        $this->logger->info('SearchConsumer: ' . $message);
         $data = json_decode($message, true);
         
         $contentsArray = [];
