@@ -20,7 +20,6 @@ class AddToCartGraphQlPlugin
 
     public function afterResolve($subject, $result, $field, $context, $info, $value, $args)
     {
-        $this->logger->info('working well in afterResolve');
         $maskedCartId = $args['cartId'] ?? null;
         $cartItems = $args['cartItems'] ?? [];
 

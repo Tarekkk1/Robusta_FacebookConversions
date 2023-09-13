@@ -14,7 +14,7 @@ class CompleteRegistrationGraphQlPlugin
     protected $publisher;
     const   TOPIC_NAME ='robusta.facebook.registration';
   
-        public function __construct(
+    public function __construct(
         \Psr\Log\LoggerInterface $logger,
         ConversionsAPI $conversionsAPI,
         StoreManagerInterface $storeManager,
