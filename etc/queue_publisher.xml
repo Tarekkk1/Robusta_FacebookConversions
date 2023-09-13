@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework-message-queue:etc/publisher.xsd">
+    <publisher topic="robusta.facebook.addtocart">
+        <connection name="amqp" exchange="robusta.facebook.addtocart" />
+    </publisher>
+    <publisher topic="robusta.facebook.addtowishlist">
+        <connection name="amqp" exchange="robusta.facebook.addtowishlist" />
+    </publisher>
+    <publisher topic="robusta.facebook.purchase">
+        <connection name="amqp" exchange="robusta.facebook.purchase" />
+    </publisher>
+    <publisher topic="robusta.facebook.search">
+        <connection name="amqp" exchange="robusta.facebook.search" />
+    </publisher>
+    <publisher topic="robusta.facebook.registration">
+        <connection name="amqp" exchange="robusta.facebook.registration" />
+    </publisher>
+
+</config>
+

@@ -4,21 +4,26 @@ namespace Robusta\FacebookConversions\Plugin;
 
 use Robusta\FacebookConversions\Services\ConversionsAPI;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\MessageQueue\PublisherInterface;
 
 class CompleteRegistrationGraphQlPlugin
 {
     protected $logger;
     protected $conversionsAPI;
     protected $storeManager;
-
+    protected $publisher;
+    const   TOPIC_NAME ='robusta.facebook.registration';
+  
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
         ConversionsAPI $conversionsAPI,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        PublisherInterface $publisher
     ) {
         $this->logger = $logger;
         $this->conversionsAPI = $conversionsAPI;
         $this->storeManager = $storeManager;
+        $this->publisher = $publisher;
     }
 
     public function afterResolve($subject, $result)
@@ -58,9 +63,8 @@ class CompleteRegistrationGraphQlPlugin
                     ],
                 ],
             ];
-        
-            $this->conversionsAPI->sendEventToFacebook('CompleteRegistration', $eventData);
-        } 
+            $this->publisher->publish(self::TOPIC_NAME, json_encode($eventData));
+         } 
         catch (\Exception $e) {
             $this->logger->error($e->getMessage());
         }

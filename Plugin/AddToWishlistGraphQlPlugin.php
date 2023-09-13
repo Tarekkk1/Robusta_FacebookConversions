@@ -5,31 +5,30 @@ namespace Robusta\FacebookConversions\Plugin;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\CategoryRepository;
 use Magento\Store\Model\StoreManagerInterface;
-use Robusta\FacebookConversions\Services\ConversionsAPI;
+use Magento\Framework\MessageQueue\PublisherInterface;
 
 class AddToWishlistGraphQlPlugin
 {
     protected $logger;
     protected $productRepository;
-    protected $categoryRepository;
     protected $storeManager;
-    protected $conversionsAPI;
+    protected $publisher;
+
+    const TOPIC_NAME = 'robusta.facebook.addtowishlist';
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
         ProductRepositoryInterface $productRepository,
-        CategoryRepository $categoryRepository,
         StoreManagerInterface $storeManager,
-        ConversionsAPI $conversionsAPI
+        PublisherInterface $publisher
     ) {
         $this->logger = $logger;
         $this->productRepository = $productRepository;
-        $this->categoryRepository = $categoryRepository;
         $this->storeManager = $storeManager;
-        $this->conversionsAPI = $conversionsAPI;
+        $this->publisher = $publisher; 
     }
 
-    public function afterExecute($subject, $result, $wishlist, $wishlistItems)
+    public function afterResolve($subject, $result, $wishlist, $wishlistItems)
     {
         if (!isset($wishlistItems['data']) || !is_array($wishlistItems['data'])) {
             $this->logger->warning('Unexpected wishlist items format.');
@@ -44,54 +43,14 @@ class AddToWishlistGraphQlPlugin
             return $result;
         }
 
-        try {
-            $product = $this->productRepository->get($sku);
-            $customerEmail = $wishlist->getCustomer()->getEmail();
-         
-
-            $this->logger->info('AddToWishlist event in progress...');
+        $eventData = [
+            'event_time' => time(),
+            'sku' => $sku,
+            'email' => hash('sha256', $wishlist->getCustomer()->getEmail()),
             
-            $categoryIds = $product->getCategoryIds();
-            $categoryName = 'Default'; 
-            if (count($categoryIds)) {
-                $category = $this->categoryRepository->get($categoryIds[0], $product->getStoreId());
-                $categoryName = $category->getName();
-            }
+        ];
 
-            $currencyCode = $this->storeManager->getStore()->getCurrentCurrencyCode();
-
-            $eventData = [
-                'data' => [
-                    [
-                        'event_name' => 'AddToWishlist',
-                        'event_time' => time(),
-                        'user' => [
-                            'email' => hash('sha256', $customerEmail)
-                        ],
-                        'custom_data' => [
-                            'content_name' => $product->getName(),
-                            'content_category' => $categoryName,
-                            'content_ids' => [(string)$product->getId()],
-                            'contents' => [
-                                [
-                                    'id' => (string)$product->getId(),
-                                    'quantity' => 1, 
-                                    'item_price' => $product->getFinalPrice() 
-                                ]
-                            ],
-                            'currency' => $currencyCode,
-                            'value' => $product->getFinalPrice(),
-                        ],
-                    ],
-                ],
-            ];
-
-            $this->conversionsAPI->sendEventToFacebook('AddToWishlist', $eventData);
-        } 
-        catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
-        }
-
+        $this->publisher->publish(self::TOPIC_NAME, json_encode($eventData));
         return $result;
     }
 }
