@@ -3,7 +3,7 @@
     <type name="Magento\QuoteGraphQl\Model\Resolver\AddProductsToCart">
         <plugin name="robusta_facebookconversions_add_to_cart_graphql" type="Robusta\FacebookConversions\Plugin\AddToCartGraphQlPlugin" sortOrder="10"/>
     </type>
-    <type name="Magento\WishlistGraphQl\Model\Resolver\AddProductsToWishlist">
+    <type name="Robusta\WishlistGraphql\Model\Resolver\WishlistItemsResolver">
         <plugin name="robusta_facebookconversions_add_to_wishlist_graphql" type="Robusta\FacebookConversions\Plugin\AddToWishlistGraphQlPlugin" sortOrder="10"/>
     </type>
     <type name="Magento\CatalogGraphQl\Model\Resolver\Products">

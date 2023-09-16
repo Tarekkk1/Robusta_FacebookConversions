@@ -3,12 +3,14 @@
 namespace Robusta\FacebookConversions\Plugin;
 
 use Magento\Framework\MessageQueue\PublisherInterface;
+use Magento\Wishlist\Model\Wishlist;
 
-class AddToCartGraphQlPlugin
+class WishlistGraphqlPlugin
 {
     protected $logger;
     protected $publisher;
-    const TOPIC_NAME = 'robusta.facebook.addtocart';
+
+    const TOPIC_NAME = 'robusta.facebook.addtowishlist';
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
@@ -20,22 +22,16 @@ class AddToCartGraphQlPlugin
 
     public function afterResolve($subject, $result, $field, $context, $info, $value, $args)
     {
-        $maskedCartId = $args['cartId'] ?? null;
-        $cartItems = $args['cartItems'] ?? [];
+        $wishlist = $value['model'];
 
-        try {
-            $data = [
+        if ($wishlist instanceof Wishlist) {
+            $eventData = [
                 'event_time' => time(),
-                'masked_cart_id' => $maskedCartId,
-                'cart_items' => $cartItems,
+                'wishlist_id' => $wishlist->getId()
             ];
-
-            $this->publisher->publish(self::TOPIC_NAME, json_encode($data));
-        } catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
+            $this->publisher->publish(self::TOPIC_NAME, json_encode($eventData));
         }
 
         return $result;
     }
-
 }
