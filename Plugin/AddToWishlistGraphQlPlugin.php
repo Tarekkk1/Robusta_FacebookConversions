@@ -2,43 +2,34 @@
 
 namespace Robusta\FacebookConversions\Plugin;
 
-use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\MessageQueue\PublisherInterface;
+use Magento\Wishlist\Model\Wishlist;
 
 class WishlistGraphqlPlugin
 {
     protected $logger;
-    protected $productRepository;
     protected $publisher;
 
     const TOPIC_NAME = 'robusta.facebook.addtowishlist';
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
-        ProductRepositoryInterface $productRepository,
         PublisherInterface $publisher
     ) {
         $this->logger = $logger;
-        $this->productRepository = $productRepository;
-        $this->publisher = $publisher; 
+        $this->publisher = $publisher;
     }
 
-    public function afterResolve($subject, $result)
+    public function afterResolve($subject, $result, $field, $context, $info, $value, $args)
     {
-        foreach ($result as $item) {
-            $product = $item['model'] ?? null;
-            if ($product && $product->getId()) {
-                $eventData = [
-                    'event_time' => time(),
-                    'sku' => $product->getSku(),
-                    'email' => hash('sha256', $wishlist->getCustomer()->getEmail()),
-                    
-                ];
+        $wishlist = $value['model'];
 
-                $this->publisher->publish(self::TOPIC_NAME, json_encode($eventData));
-            } else {
-                $this->logger->warning('Product data not found in wishlist item.');
-            }
+        if ($wishlist instanceof Wishlist) {
+            $eventData = [
+                'event_time' => time(),
+                'wishlist_id' => $wishlist->getId()
+            ];
+            $this->publisher->publish(self::TOPIC_NAME, json_encode($eventData));
         }
 
         return $result;
