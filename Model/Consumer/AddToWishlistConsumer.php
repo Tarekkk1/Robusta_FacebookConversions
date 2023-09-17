@@ -58,15 +58,15 @@ class AddToWishlistConsumer
             }
     
             $categoriesAsString = !empty($categoryNames) ? implode(', ', $categoryNames) : 'Default';
-    
-            $currencyCode = $this->storeManager->getStore()->getCurrentCurrencyCode();
-    
-            $wishlist = $this->wishlistFactory->create()->load($wishlistId);
 
+            $currencyCode = $this->storeManager->getStore()->getCurrentCurrencyCode();
+
+            $wishlist = $this->wishlistFactory->create()->load($wishlistId);
+            
             $customerId = $wishlist->getCustomerId();
             $customer = $this->customerRepository->getById($customerId);
             $customerEmail = $customer->getEmail();
-            $this->logger->info($customerEmail);
+         
             $finalEventData = [
                 'event_name' => 'AddToWishlist',
                 'event_time' => $eventData['event_time'],
