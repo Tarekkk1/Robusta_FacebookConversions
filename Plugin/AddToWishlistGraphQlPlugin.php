@@ -23,7 +23,6 @@ class AddToWishlistGraphQlPlugin
     public function afterResolve($subject, $result, $field, $context, $info, $value, $args)
     {
         $wishlist = $value['model'];
-        $this->logger->info('WishlistGraphqlPlugin: ' . $wishlist->getId());
 
         if ($wishlist instanceof Wishlist) {
             $eventData = [
