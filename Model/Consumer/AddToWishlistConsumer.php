@@ -7,7 +7,7 @@ use Magento\Catalog\Model\CategoryRepository;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Wishlist\Model\WishlistFactory;
 
-class WishlistGraphqlConsumer
+class AddToWishlistConsumer
 {
     protected $conversionsAPI;
     protected $logger;

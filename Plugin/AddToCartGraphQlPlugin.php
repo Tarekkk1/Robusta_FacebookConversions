@@ -22,6 +22,7 @@ class AddToCartGraphQlPlugin
     {
         $maskedCartId = $args['cartId'] ?? null;
         $cartItems = $args['cartItems'] ?? [];
+        $this->logger->info('AddToCartGraphQlPlugin: ' . $maskedCartId);
 
         try {
             $data = [

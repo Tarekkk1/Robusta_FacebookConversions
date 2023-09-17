@@ -5,7 +5,7 @@ namespace Robusta\FacebookConversions\Plugin;
 use Magento\Framework\MessageQueue\PublisherInterface;
 use Magento\Wishlist\Model\Wishlist;
 
-class WishlistGraphqlPlugin
+class AddToWishlistGraphQlPlugin
 {
     protected $logger;
     protected $publisher;
@@ -23,6 +23,7 @@ class WishlistGraphqlPlugin
     public function afterResolve($subject, $result, $field, $context, $info, $value, $args)
     {
         $wishlist = $value['model'];
+        $this->logger->info('WishlistGraphqlPlugin: ' . $wishlist->getId());
 
         if ($wishlist instanceof Wishlist) {
             $eventData = [
