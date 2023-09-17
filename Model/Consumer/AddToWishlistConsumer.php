@@ -15,6 +15,7 @@ class AddToWishlistConsumer
     protected $categoryRepository;
     protected $storeManager;
     protected $wishlistFactory;
+    protected $customerRepository;
 
     public function __construct(
         \Robusta\FacebookConversions\Services\ConversionsAPI $conversionsAPI,
@@ -22,7 +23,9 @@ class AddToWishlistConsumer
         ProductRepositoryInterface $productRepository,
         CategoryRepository $categoryRepository,
         StoreManagerInterface $storeManager,
-        WishlistFactory $wishlistFactory
+        WishlistFactory $wishlistFactory,
+        \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
+        
     ) {
         $this->conversionsAPI = $conversionsAPI;
         $this->logger = $logger;
@@ -30,6 +33,7 @@ class AddToWishlistConsumer
         $this->categoryRepository = $categoryRepository;
         $this->storeManager = $storeManager;
         $this->wishlistFactory = $wishlistFactory;
+        $this->customerRepository = $customerRepository;
     }
     public function processMessage($message)
     {
@@ -58,12 +62,16 @@ class AddToWishlistConsumer
             $currencyCode = $this->storeManager->getStore()->getCurrentCurrencyCode();
     
             $wishlist = $this->wishlistFactory->create()->load($wishlistId);
-    
+
+            $customerId = $wishlist->getCustomerId();
+            $customer = $this->customerRepository->getById($customerId);
+            $customerEmail = $customer->getEmail();
+            $this->logger->info($customerEmail);
             $finalEventData = [
                 'event_name' => 'AddToWishlist',
                 'event_time' => $eventData['event_time'],
                 'user' => [
-                    'email' => hash('sha256', $wishlist->getCustomer()->getEmail())
+                    'email' => hash('sha256', $customerEmail),
                 ],
                 'custom_data' => [
                     'content_name' => $product->getName(),
