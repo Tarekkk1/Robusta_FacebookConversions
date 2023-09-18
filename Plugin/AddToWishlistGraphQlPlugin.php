@@ -22,13 +22,13 @@ class AddToWishlistGraphQlPlugin
     {
         $productId = $args['product_id'] ?? null;
     
-            $eventData = [
-                'event_time' => time(),
-                'wishlist_id' =>$result['id'],  
-                'product_id' => $productId
-            ];
-          
-            $this->publisher->publish(self::TOPIC_NAME, json_encode($eventData));
+        $eventData = [
+            'event_time' => time(),
+            'wishlist_id' =>$result['id'],  
+            'product_id' => $productId
+        ];
+        
+        $this->publisher->publish(self::TOPIC_NAME, json_encode($eventData));
         
     
         return $result;
