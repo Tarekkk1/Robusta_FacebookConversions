@@ -1,56 +1,37 @@
 <?php
-
 namespace Robusta\FacebookConversions\Plugin;
 
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Catalog\Model\CategoryRepository;
-use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\MessageQueue\PublisherInterface;
+use Magento\Wishlist\Model\Wishlist;
 
 class AddToWishlistGraphQlPlugin
 {
     protected $logger;
-    protected $productRepository;
-    protected $storeManager;
     protected $publisher;
-
     const TOPIC_NAME = 'robusta.facebook.addtowishlist';
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
-        ProductRepositoryInterface $productRepository,
-        StoreManagerInterface $storeManager,
         PublisherInterface $publisher
     ) {
         $this->logger = $logger;
-        $this->productRepository = $productRepository;
-        $this->storeManager = $storeManager;
-        $this->publisher = $publisher; 
+        $this->publisher = $publisher;
     }
 
-    public function afterResolve($subject, $result, $wishlist, $wishlistItems)
+    public function afterResolve($subject, $result, $field, $context, $info, $value, $args)
     {
-        if (!isset($wishlistItems['data']) || !is_array($wishlistItems['data'])) {
-            $this->logger->warning('Unexpected wishlist items format.');
-            return $result;
-        }
-
-        $data = $wishlistItems['data'];
-        $sku = $data['sku'] ?? null;
-
-        if (!$sku) {
-            $this->logger->warning('SKU not found in wishlist items data.');
-            return $result;
-        }
-
+        $productId = $args['product_id'] ?? null;
+    
         $eventData = [
             'event_time' => time(),
-            'sku' => $sku,
-            'email' => hash('sha256', $wishlist->getCustomer()->getEmail()),
-            
+            'wishlist_id' =>$result['id'],  
+            'product_id' => $productId
         ];
-
+        
         $this->publisher->publish(self::TOPIC_NAME, json_encode($eventData));
+        
+    
         return $result;
     }
+    
 }
