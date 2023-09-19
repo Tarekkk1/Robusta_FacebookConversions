@@ -9,18 +9,20 @@ class SearchConsumer
 {
     protected $conversionsAPI;
     protected $logger;
+    protected $storeManager;
 
     public function __construct(
         ConversionsAPI $conversionsAPI,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        \Magento\Store\Model\StoreManagerInterface $storeManager
     ) {
         $this->conversionsAPI = $conversionsAPI;
         $this->logger = $logger;
+        $this->storeManager = $storeManager;
     }
 
     public function processMessage($message)
     {
-        $this->logger->info('SearchConsumer: ' . $message);
         $data = json_decode($message, true);
         
         $contentsArray = [];
@@ -41,7 +43,7 @@ class SearchConsumer
                         'content_ids' => array_column($contentsArray, 'id'),
                         'content_type' => 'product',
                         'contents' => $contentsArray,
-                        'currency' => $data['currency'],
+                        'currency' => $this->storeManager->getStore()->getCurrentCurrencyCode(),
                         'search_string' => $data['search_query'],
                         'value' => 0,
                     ],

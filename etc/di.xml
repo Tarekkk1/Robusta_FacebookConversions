@@ -12,4 +12,7 @@
     <type name="Magento\CustomerGraphQl\Model\Resolver\CreateCustomer">
         <plugin name="robusta_facebookconversions_create_customer_graphql" type="Robusta\FacebookConversions\Plugin\CompleteRegistrationGraphQlPlugin" sortOrder="10"/>
     </type>
+    <type name="Mirasvit\SearchGraphQl\Model\Resolver\Magento\Catalog\Product">
+        <plugin name="robusta_facebookconversions_searchresult_plugin" type="Robusta\FacebookConversions\Plugin\SearchResultPlugin" sortOrder="10"/>
+    </type>
 </config>
