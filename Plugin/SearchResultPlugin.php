@@ -2,7 +2,6 @@
 
 namespace Robusta\FacebookConversions\Plugin;
 
-use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\MessageQueue\PublisherInterface;
 
 class SearchResultPlugin
@@ -10,16 +9,13 @@ class SearchResultPlugin
     const TOPIC_NAME = 'robusta.facebook.search';
 
     protected $logger;
-    protected $storeManager;
     protected $messageQueue;
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
-        StoreManagerInterface $storeManager,
         PublisherInterface $messageQueue
     ) {
         $this->logger = $logger;
-        $this->storeManager = $storeManager;
         $this->messageQueue = $messageQueue;
     }
 
@@ -38,7 +34,6 @@ class SearchResultPlugin
         }
         if (isset($info->operation->selectionSet->selections[0]->arguments[0]->value->value)) {
             $searchQuery = $info->operation->selectionSet->selections[0]->arguments[0]->value->value;
-            $this->logger->info('Extracted search query: ' . $searchQuery);
         } else {
             $this->logger->info('Search query not found in the provided structure.');
             return $result;
@@ -48,7 +43,6 @@ class SearchResultPlugin
         $eventData = [
             'event_time' => time(),
             'search_query' => $searchQuery,
-            'currency' => $this->storeManager->getStore()->getCurrentCurrencyCode(),
             'contents' => $items
         ];
     
