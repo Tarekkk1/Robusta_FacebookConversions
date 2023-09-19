@@ -26,24 +26,35 @@ class SearchResultPlugin
     public function afterResolve($subject, $result, $field, $context, $info, $value = null, $args = null)
     {
         $items = [];
-        if (isset($result['data']['search']['magento_catalog_product']['items'])) {
-            $items = $result['data']['search']['magento_catalog_product']['items'];
-            $this->logger->info('Found items: ' . json_encode($items));
-        }
 
+        if (isset($result['items']) && is_array($result['items'])) {
+            foreach ($result['items'] as $item) {
+                if (isset($item['sku'])) {
+                    $items[] = [
+                        'sku' => $item['sku']
+                      ];
+                }
+            }
+        }
+        if (isset($info->operation->selectionSet->selections[0]->arguments[0]->value->value)) {
+            $searchQuery = $info->operation->selectionSet->selections[0]->arguments[0]->value->value;
+            $this->logger->info('Extracted search query: ' . $searchQuery);
+        } else {
+            $this->logger->info('Search query not found in the provided structure.');
+            return $result;
+        }
+        
+    
         $eventData = [
             'event_time' => time(),
-            'search_query' => $args['query'],
+            'search_query' => $searchQuery,
             'currency' => $this->storeManager->getStore()->getCurrentCurrencyCode(),
             'contents' => $items
         ];
-
-        $this->logger->info('Mirasvit Search event data: ' . json_encode($eventData));
-
-        $this->logger->info('Queuing Mirasvit Search event data...');
+    
         $this->messageQueue->publish(self::TOPIC_NAME, json_encode($eventData));
-
         return $result;
     }
+    
 
 }

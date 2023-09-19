@@ -22,31 +22,32 @@ class SearchGraphQlPlugin
         $this->messageQueue = $messageQueue;
     }
 
-    public function afterResolve($subject, $result, $args)
+    public function afterResolve($subject, $result, $field, $context, $info, $value = null, $args = null)
+      
     {
-
-        if (!isset($args['search'])) {
+        if (isset($info->operation->selectionSet->selections[0]->arguments[0]->value->value)) {
+            $searchQuery = $info->operation->selectionSet->selections[0]->arguments[0]->value->value;
+            $this->logger->info('Extracted search query: ' . $searchQuery);
+        } else {
+            $this->logger->info('Search query not found in the provided structure.');
             return $result;
         }
-
-        $searchQuery = $args['search'];
-        $this->logger->info('Search event in progress...');
-
-        if (!$searchQuery) {
-            return $result;
+    
+        try {
+            $eventData = [
+                'event_time' => time(),
+                'search_query' => $searchQuery,
+                'currency' => $this->storeManager->getStore()->getCurrentCurrencyCode(),
+                'contents' => $result['items'] ?? []  
+            ];
+    
+            $this->logger->info(json_encode($result['items']));
+            $this->messageQueue->publish(self::TOPIC_NAME, json_encode($eventData));
+        } catch (\Exception $e) {
+            $this->logger->error('Error while queuing search event: ' . $e->getMessage());
         }
-
-        $this->logger->info('Queuing Search event data...');
-
-        $eventData = [
-            'event_time' => time(),
-            'search_query' => $searchQuery,
-            'currency' => $this->storeManager->getStore()->getCurrentCurrencyCode(),
-            'contents' => $result['products']['items']
-        ];
-
-        $this->messageQueue->publish(self::TOPIC_NAME, json_encode($eventData));
-
+    
         return $result;
     }
+    
 }
